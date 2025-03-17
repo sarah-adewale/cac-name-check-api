@@ -6,9 +6,17 @@ const cors = require('cors')
 
 dotenv.config()
 
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(origin => origin.trim());
 // Configure CORS
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || '*', // Use environment variable or allow all origins
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST'], // Allowed HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X_API_KEY'], // Allowed headers
     credentials: true // Allow cookies if needed
